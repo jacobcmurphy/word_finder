@@ -1,0 +1,7 @@
+development:
+  adapter: postgresql
+  database: poetry_development
+  pool: 5
+  host: localhost
+  username:
+  password:

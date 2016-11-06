@@ -1,0 +1,105 @@
+Phoneset.0.1
+List of phonemes in cmudict.0.1
+Compliments of Jerry Quinn (jquinn@bnr.ca)
+
+Phoneme	Example	Translation
+
+AA	odd	AA D
+AE	at	AE T
+AH	hut	HH AH T
+AO	ought	AO T
+AW	cow	K AW
+AY	hide	HH AY D
+B	be	B IY
+CH	cheese	CH IY Z
+D	dee	D IY
+DH	thee	DH IY
+EH	Ed	EH D
+ER	hurt	HH ER T
+EY	ate	EY T
+F	fee	F IY
+G	green	G R IY N
+HH	he	HH IY
+IH	it	IH T
+IY	eat	IY T
+JH	gee	JH IY
+K	key	K IY
+L	lee	L IY
+M	me	M IY
+N	knee	N IY
+NG	ping	P IY NG
+OW	oat	OW T
+OY	toy	T OY
+P	pee	P IY
+R	read	R IY D
+S	sea	S IY
+SH	she	SH IY
+T	tea	T IY
+TH	theta	TH EY T AH
+UH	hood	HH UH D
+UW	two	T UW
+V	vee	V IY
+W	we	W IY
+Y	yield	Y IY L D
+Z	zee	Z IY
+ZH	seizure	S IY ZH ER
+
+
+vowels:
+AH	hut	HH AH T
+AO	ought	AO T
+AA	odd	AA D
+UH	hood	HH UH D
+AE	at	AE T
+IH	it	IH T
+EH	Ed	EH D
+
+OW	oat	OW T
+EY	ate	EY T
+AY	hide	HH AY D
+IY	eat	IY T
+
+ER	hurt	HH ER T
+AW	cow	K AW
+OY	toy	T OY
+UW	two	T UW
+
+
+
+consonants (ordering loosely based on soundex):
+
+HH	he	HH IY
+
+Y	yield	Y IY L D
+M	me	M IY
+N	knee	N IY
+
+
+B	be	B IY
+P	pee	P IY
+F	fee	F IY
+V	vee	V IY
+TH  theta TH EY T AH
+DH	thee	DH IY
+
+
+D	dee	D IY
+T	tea	T IY
+
+L	lee	L IY
+
+W	we	W IY
+
+K	key	K IY
+S	sea	S IY
+Z	zee	Z IY
+G	green   G R IY N
+
+R	read	R IY D
+
+JH	gee	JH IY
+CH	cheese	CH IY Z
+SH	she	SH IY
+ZH	seizure	S IY ZH ER
+
+NG	ping	P IY NG
