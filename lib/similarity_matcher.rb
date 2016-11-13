@@ -1,14 +1,10 @@
-# require_relative 'app'
-# matcher = SimilarityMatcher.new('tomcat')
-# matcher.match_words
+require 'pry'
 
 class SimilarityMatcher
   attr_accessor :target_word, :word_id_list
 
-  VOWEL_MULTIPLIER = 10
   VOWEL_PHONEMES = %w(ah ao aa uh ae ih eh ow ey ay iy er aw oy uw )
   PHONEMES = (VOWEL_PHONEMES + %w(hh y m n b p f v th dh d t l w k s z g r jh ch sh zh ng)).freeze
-  POSITION_WEIGHTINGS = [2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946].freeze
 
   def initialize(target_word_text, word_id_list = [])
     @target_word = Word.find_by(word: target_word_text)
@@ -21,42 +17,59 @@ class SimilarityMatcher
 
     Pronunciation.where(word_id: word_id_list).includes(:word).each do |pronunciation|
       phonemes = get_phonemes(pronunciation)
-      word_weight = phonemes.each_with_index.inject(0) do |sum, (phoneme, idx)|
-        sum + relative_phoneme_weighting(phoneme, idx)
-      end
-      weighted_matches[pronunciation.word.word] = word_weight
+      weighted_matches[pronunciation.word.word] = calculate_word_weight(target_phonemes, phonemes)
     end
 
-    weighted_matches.sort_by { |_k, value| value }
+    matches = weighted_matches.sort_by { |_k, value| value }
+    binding.pry
+  end
+
+  def calculate_word_weight(target_phonemes, new_phonemes)
+    num_phonemes = [target_phonemes.length, new_phonemes.length].min
+    relevant_phonemes = target_phonemes.last(num_phonemes).reverse.zip(new_phonemes.last(num_phonemes).reverse)
+    total_vowels = count_vowels(relevant_phonemes.flatten)
+    vowel_count = 0
+    word_weight = relevant_phonemes.inject(0) do |sum, (target_phoneme, new_phoneme)|
+      val = sum + relative_phoneme_weighting(target_phoneme, new_phoneme, vowel_count, total_vowels)
+      vowel_count += 1 if is_vowel? target_phoneme
+      vowel_count += 1 if is_vowel? new_phoneme
+      val
+    end
   end
 
   private
 
-  def relative_phoneme_weighting(phoneme, idx)
-    phoneme_difference = ( PHONEMES.index(phoneme) - PHONEMES.index(target_phonemes[idx]) ).abs
-    phoneme_difference = apply_multiplier?(phoneme, target_phonemes[idx]) ? phoneme_difference * VOWEL_MULTIPLIER : phoneme_difference
-    phoneme_difference * POSITION_WEIGHTINGS[idx]
+  def relative_phoneme_weighting(target_phoneme, new_phoneme, vowel_count, total_vowels)
+    weight = ( PHONEMES.index(new_phoneme) - PHONEMES.index(target_phoneme) ).abs
+    weight * get_modifier(target_phoneme, new_phoneme, vowel_count, total_vowels)
   end
 
-  def apply_multiplier?(phoneme_one, phoneme_two)
-    first_is_vowel = is_vowel? phoneme_one
-    second_is_vowel = is_vowel? phoneme_two
+  def get_modifier(target_phoneme, new_phoneme, vowel_count, total_vowels)
+    target_is_vowel = is_vowel? target_phoneme
+    new_is_vowel = is_vowel? new_phoneme
 
-    (first_is_vowel && !second_is_vowel) || (!first_is_vowel && second_is_vowel)
+    mult = (total_vowels - vowel_count) * PHONEMES.count
+    !target_is_vowel || !new_is_vowel ? mult * 2 : mult
   end
 
   def is_vowel?(phoneme)
     VOWEL_PHONEMES.include? phoneme
   end
 
+  def count_vowels(phonemes)
+    count = 0
+    phonemes.each do |phoneme|
+      count += 1 if is_vowel? phoneme
+    end
+    count
+  end
+
   def get_phonemes(pronunciation)
-    phonemes = pronunciation.cmu_notation.split.reverse
-    number_of_phonemes_to_check = [target_phonemes.length, phonemes.length].min
-    phonemes.first(number_of_phonemes_to_check)
+    pronunciation.cmu_notation.split
   end
 
   def target_phonemes
-    @_target_phonemes ||= target_word.pronunciations.first.cmu_notation.split.reverse
+    @_target_phonemes ||= get_phonemes(target_word.pronunciations.first)
   end
 
   def limit_word_id_list
@@ -66,3 +79,7 @@ class SimilarityMatcher
     end
   end
 end
+
+require_relative '../app'
+matcher = SimilarityMatcher.new('song')
+matcher.match_words
