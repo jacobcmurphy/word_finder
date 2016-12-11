@@ -2,6 +2,9 @@
   Sorry, no matches were found. <a href='/'>Try another search?</a>
 <% else %>
   Words that match your search:
+  <ul>
   <% words.each do |word| %>
+    <li> <%= word%> </li>
   <% end %>
+  </ul>
 <% end %>

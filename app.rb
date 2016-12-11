@@ -12,6 +12,6 @@ get '/' do
 end
 
 get '/search' do
-  words = WordMatcher.new(params)
-  erb :search, layout: 'layouts/main'.to_sym, locals: {words: words}
+  matcher = WordMatcher.new(params)
+  erb :search, layout: 'layouts/main'.to_sym, locals: {words: matcher.get_words}
 end

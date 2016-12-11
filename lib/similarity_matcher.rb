@@ -8,7 +8,7 @@ class SimilarityMatcher
 
   def initialize(target_word_text, word_id_list = [])
     @target_word = Word.find_by(word: target_word_text)
-    @word_id_list = word_id_list
+    @word_id_list = word_id_list.to_a
     limit_word_id_list
   end
 
@@ -21,7 +21,6 @@ class SimilarityMatcher
     end
 
     matches = weighted_matches.sort_by { |_k, value| value }
-    binding.pry
   end
 
   def calculate_word_weight(target_phonemes, new_phonemes)
@@ -80,6 +79,6 @@ class SimilarityMatcher
   end
 end
 
-require_relative '../app'
-matcher = SimilarityMatcher.new('song')
-matcher.match_words
+# require_relative '../app'
+# matcher = SimilarityMatcher.new('song')
+# matcher.match_words
