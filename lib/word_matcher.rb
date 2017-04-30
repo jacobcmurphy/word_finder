@@ -1,62 +1,63 @@
 require 'set'
 require_relative 'similarity_matcher'
-  require 'pry'
+require 'pry'
 
 class WordMatcher
   attr_accessor :word_ids
   attr_reader :params
 
   def initialize(params = {})
-    @word_ids = Set.new
+    @query = Word.all
     @params = params
+    @joined_to = {}
   end
 
   def get_words
     limit_words_by_params
-    words = if params['sounds_like'].to_s.length.zero?
-      Word.find(word_ids.to_a).pluck(:word)
+    if params['sounds_like'].to_s.length.zero?
+      @query
     else
-      word_similarity(params['sounds_like'], word_ids.count.zero? ? nil : word_ids)
+      word_similarity(params['sounds_like'])
     end
   end
 
   private
 
   def limit_words_by_params
-    number_of_syllables(params['number_of_syllables']) unless params['number_of_syllables'].to_s == '0'
-    primary_stress(params['primary_stress']) unless params['primary_stress'].to_i.to_s == '0'
-    secondary_stress(params['secondary_stress']) unless params['secondary_stress'].to_i.to_s == '0'
+    number_of_syllables(params['number_of_syllables']) unless params['number_of_syllables'].to_i < 1
     part_of_speech(params['part_of_speech']) unless params['part_of_speech'].to_s.length.zero?
+    primary_stress(params['primary_stress']) unless params['primary_stress'].to_i < 1
+    secondary_stress(params['secondary_stress']) unless params['secondary_stress'].to_i < 1
   end
 
   def number_of_syllables(num_syllables)
-    new_ids = SyllableCount.where(number_of_syllables: num_syllables).pluck(:word_id)
-    limit_ids(new_ids)
+    @query = join_associated(:syllable_counts).where(syllable_counts: { number_of_syllables: num_syllables })
   end
 
   def part_of_speech(pos)
-    new_ids = WordType.where(part_of_speech: pos).pluck(:word_id)
-    limit_ids(new_ids)
+    @query = join_associated(:word_types).where(word_types: { part_of_speech: pos })
   end
 
   def primary_stress(syllable_number)
-    new_ids = Pronunciation.where(primary_stress: syllable_number.to_i).pluck(:word_id)
-    limit_ids(new_ids)
+    @query = join_associated(:pronunciations).where(pronunciations: { primary_stress: syllable_number.to_i })
  end
 
   def secondary_stress(syllable_number)
-    new_ids = Pronunciation.where(secondary_stress: syllable_number.to_i).pluck(:word_id)
-    limit_ids(new_ids)
+    @query = join_associated(:pronunciations).where(pronunciations: { secondary_stress: syllable_number.to_i })
   end
 
-  def word_similarity(word_to_compare_to, word_id_list = @word_ids)
-    matcher = SimilarityMatcher.new(word_to_compare_to, word_id_list)
-    matcher.match_words.map(&:first)
+  def word_similarity(word_to_compare_to)
+    target_word = Word.find_by(word: word_to_compare_to)
+    SimilarityMatcher.new(target_word, @query.pluck(:id)).words
   end
 
   private
 
-  def limit_ids(new_ids)
-    @word_ids = @word_ids.empty? ? new_ids : (@word_ids & new_ids)
+  def join_associated(join_symbol)
+    return @query if @joined_to[join_symbol]
+
+    @query = @query.joins(join_symbol)
+    @joined_to[join_symbol] = true
+    @query
   end
 end

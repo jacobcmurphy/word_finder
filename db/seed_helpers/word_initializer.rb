@@ -1,5 +1,5 @@
 require_relative '../../app'
-require 'pry'
+
 class WordInitializer
   def initialize(path = File.expand_path('../../../data_files/syllables.txt', __FILE__) )
     read_file(path)

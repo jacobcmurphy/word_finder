@@ -1,10 +1,12 @@
+<a href='/'>New Search</a>
+<br>
 <% if words.count == 0 %>
-  Sorry, no matches were found. <a href='/'>Try another search?</a>
+  Sorry, no matches were found.
 <% else %>
   Words that match your search:
   <ul>
   <% words.each do |word| %>
-    <li> <%= word%> </li>
+    <li> <%= word.word %> </li>
   <% end %>
   </ul>
 <% end %>

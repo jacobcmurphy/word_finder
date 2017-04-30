@@ -1,26 +1,28 @@
-require 'pry'
-
 class SimilarityMatcher
   attr_accessor :target_word, :word_id_list
 
   VOWEL_PHONEMES = %w(ah ao aa uh ae ih eh ow ey ay iy er aw oy uw )
   PHONEMES = (VOWEL_PHONEMES + %w(hh y m n b p f v th dh d t l w k s z g r jh ch sh zh ng)).freeze
 
-  def initialize(target_word_text, word_id_list = [])
-    @target_word = Word.find_by(word: target_word_text)
-    @word_id_list = word_id_list.to_a
-    limit_word_id_list
+  def initialize(target_word, word_id_list = [])
+    @target_word = target_word
+    @word_id_list = word_id_list.size.zero? ? default_word_id_list : word_id_list
   end
 
-  def match_words
-    weighted_matches = {}
+  def words
+    @_words ||= weighted_matches.map(&:first)
+  end
 
-    Pronunciation.where(word_id: word_id_list).includes(:word).each do |pronunciation|
-      phonemes = get_phonemes(pronunciation)
-      weighted_matches[pronunciation.word.word] = calculate_word_weight(target_phonemes, phonemes)
+  def weighted_matches
+    @_weighted_matches ||= begin
+      matches = {}
+
+      Pronunciation.where(word_id: word_id_list).includes(:word).each do |pronunciation|
+        matches[pronunciation.word] = calculate_word_weight(target_phonemes, pronunciation.phonemes)
+      end
+
+      matches.sort_by { |_k, value| value }
     end
-
-    matches = weighted_matches.sort_by { |_k, value| value }
   end
 
   def calculate_word_weight(target_phonemes, new_phonemes)
@@ -56,29 +58,19 @@ class SimilarityMatcher
   end
 
   def count_vowels(phonemes)
-    count = 0
-    phonemes.each do |phoneme|
-      count += 1 if is_vowel? phoneme
-    end
-    count
-  end
-
-  def get_phonemes(pronunciation)
-    pronunciation.cmu_notation.split
+    phonemes.select { |p| is_vowel? p }.count
   end
 
   def target_phonemes
-    @_target_phonemes ||= get_phonemes(target_word.pronunciations.first)
+    @_target_phonemes ||= target_word.pronunciations.phonemes
   end
 
-  def limit_word_id_list
-    if @word_id_list.length.zero?
-      num_syllables_in_target = target_word.syllable_counts.first.number_of_syllables
-      @word_id_list = SyllableCount.where(number_of_syllables: num_syllables_in_target-1..num_syllables_in_target+1).pluck(:word_id)
-    end
+  def default_word_id_list
+    num_syllables_in_target = target_word.syllable_counts.first.number_of_syllables
+    SyllableCount.where(number_of_syllables: num_syllables_in_target-1..num_syllables_in_target+1).pluck(:word_id)
   end
 end
 
 # require_relative '../app'
-# matcher = SimilarityMatcher.new('song')
-# matcher.match_words
+# matcher = SimilarityMatcher.new(Word.find_by(word: 'song'))
+# matcher.words

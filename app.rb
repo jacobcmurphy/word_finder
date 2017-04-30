@@ -1,5 +1,6 @@
-require 'sinatra'
-require 'sinatra/activerecord'
+require 'bundler'
+Bundler.require(:default)
+
 require './config/environments'
 require './models/word'
 require './models/pronunciation'
@@ -13,5 +14,5 @@ end
 
 get '/search' do
   matcher = WordMatcher.new(params)
-  erb :search, layout: 'layouts/main'.to_sym, locals: {words: matcher.get_words}
+  erb :search, layout: 'layouts/main'.to_sym, locals: { words: matcher.get_words }
 end
