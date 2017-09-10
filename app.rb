@@ -1,18 +1,16 @@
+require 'json'
 require 'bundler'
 Bundler.require(:default)
 
 require './config/environments'
-require './models/word'
-require './models/pronunciation'
-require './models/word_type'
-require './models/syllable_count'
 require './lib/word_matcher'
 
-get '/' do
-  erb :index, layout: 'layouts/main'.to_sym
+get '/search' do
+  headers('Access-Control-Allow-Origin' => '*')
+  content_type :json
+
+  matcher = WordMatcher.new(params)
+  words = matcher.get_words.pluck(:word)
+  { words: words }.to_json
 end
 
-get '/search' do
-  matcher = WordMatcher.new(params)
-  erb :search, layout: 'layouts/main'.to_sym, locals: { words: matcher.get_words }
-end

@@ -1,6 +1,9 @@
-require 'set'
-require_relative 'similarity_matcher'
 require 'pry'
+require_relative 'similarity_matcher'
+require_relative '../models/word'
+require_relative '../models/pronunciation.rb'
+require_relative '../models/syllable_count.rb'
+require_relative '../models/word_type.rb'
 
 class WordMatcher
   attr_accessor :word_ids

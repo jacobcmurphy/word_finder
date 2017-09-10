@@ -1,3 +1,6 @@
+require_relative '../models/pronunciation'
+require_relative '../models/syllable_count'
+
 class SimilarityMatcher
   attr_accessor :target_word, :word_id_list
 
@@ -62,7 +65,7 @@ class SimilarityMatcher
   end
 
   def target_phonemes
-    @_target_phonemes ||= target_word.pronunciations.phonemes
+    @_target_phonemes ||= target_word.pronunciations.first.phonemes
   end
 
   def default_word_id_list
